@@ -278,6 +278,23 @@ const Game = {
     drawables.push({ sortY: this.player.y, draw: () => this.player.draw(ctx) });
     drawables.sort((a, b) => a.sortY - b.sortY);
     drawables.forEach((d) => d.draw());
+
+    this._drawVignette(ctx);
+  },
+
+  // A soft darkened edge gives the scene depth instead of looking like
+  // a flat, evenly-lit sheet — cheap to draw fresh each frame since it
+  // doesn't involve any randomness (so no caching needed, unlike ground).
+  _drawVignette(ctx) {
+    if (!this._vignetteCache || this._vignetteCache.w !== this.canvas.width || this._vignetteCache.h !== this.canvas.height) {
+      const w = this.canvas.width, h = this.canvas.height;
+      const grad = ctx.createRadialGradient(w / 2, h / 2, Math.min(w, h) * 0.35, w / 2, h / 2, Math.max(w, h) * 0.72);
+      grad.addColorStop(0, "rgba(0,0,0,0)");
+      grad.addColorStop(1, "rgba(0,0,0,0.4)");
+      this._vignetteCache = { w, h, grad };
+    }
+    ctx.fillStyle = this._vignetteCache.grad;
+    ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
   },
 
   _drawDecoration(d) {

@@ -33,38 +33,38 @@ const Textures = (() => {
   const TILE = 32;
 
   const COLORS = {
-    grassDark: "#172b19",
-    grass: "#294522",
-    grassLight: "#42672d",
-    grassBright: "#668d3b",
+    grassDark: "#0f2011",
+    grass: "#223a1d",
+    grassLight: "#3c5c28",
+    grassBright: "#5c8034",
 
-    dirtDark: "#39291b",
-    dirt: "#62472b",
-    dirtLight: "#80603a",
+    dirtDark: "#2c1e12",
+    dirt: "#523a22",
+    dirtLight: "#725530",
 
-    stoneDark: "#343936",
-    stone: "#596057",
-    stoneLight: "#7b8277",
+    stoneDark: "#26292a",
+    stone: "#484f4c",
+    stoneLight: "#6b726d",
 
-    waterDark: "#102f35",
-    water: "#16464b",
-    waterLight: "#277078",
+    waterDark: "#0a232a",
+    water: "#123a40",
+    waterLight: "#1f5c63",
 
-    woodDark: "#302016",
-    wood: "#684326",
-    woodLight: "#956338",
+    woodDark: "#221609",
+    wood: "#573417",
+    woodLight: "#82552c",
 
-    leafDark: "#18351d",
-    leaf: "#2f5d27",
-    leafLight: "#4d7c32",
+    leafDark: "#0f2613",
+    leaf: "#254d1f",
+    leafLight: "#40682a",
 
     skin: "#c9825d",
     skinLight: "#e0a174",
-    hair: "#38251d",
+    hair: "#2a1a12",
 
-    shirt: "#526b55",
-    pants: "#39424a",
-    boot: "#29251f",
+    shirt: "#42574a",
+    pants: "#2c333a",
+    boot: "#1c1913",
 
     fire: "#ff9d32",
     fireLight: "#ffe08a",
@@ -372,8 +372,8 @@ const Textures = (() => {
     ctx.scale(scale, scale);
 
     // shadow
-    ctx.globalAlpha = 0.35;
-    circle(ctx, 0, 30, 24, "#08130b");
+    ctx.globalAlpha = 0.5;
+    circle(ctx, 0, 30, 25, "#050d06");
     ctx.globalAlpha = 1;
 
     // trunk
@@ -641,8 +641,8 @@ const Textures = (() => {
     ctx.translate(x, y);
     ctx.scale(scale, scale);
 
-    ctx.globalAlpha = 0.3;
-    ellipse(ctx, 0, 42, 65, 12, "#09120a");
+    ctx.globalAlpha = 0.45;
+    ellipse(ctx, 0, 42, 66, 13, "#05080a");
     ctx.globalAlpha = 1;
 
     rect(ctx, -52, -5, 104, 52, COLORS.wood);
@@ -698,8 +698,8 @@ const Textures = (() => {
     ctx.translate(x, y);
     ctx.scale(scale, scale);
 
-    ctx.globalAlpha = 0.3;
-    ellipse(ctx, 0, 15, 11, 4, "#08100a");
+    ctx.globalAlpha = 0.45;
+    ellipse(ctx, 0, 15, 12, 4.5, "#05080a");
     ctx.globalAlpha = 1;
 
     rect(ctx, -8, 10, 6, 7, COLORS.boot);
@@ -761,8 +761,8 @@ const Textures = (() => {
     ctx.translate(x, y);
     ctx.scale(scale, scale);
 
-    ctx.globalAlpha = 0.3;
-    ellipse(ctx, 0, 13, 16, 4, "#08100a");
+    ctx.globalAlpha = 0.45;
+    ellipse(ctx, 0, 13, 17, 4.5, "#05080a");
     ctx.globalAlpha = 1;
 
     ellipse(ctx, 0, 0, 18, 9, "#333b39");
