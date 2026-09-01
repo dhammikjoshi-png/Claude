@@ -94,15 +94,9 @@ class Player {
   }
 
   draw(ctx) {
-    Sprites.drawShadow(ctx, this.x, this.y + 2, 6);
     ctx.save();
     if (this.hurtFlash > 0 && Math.floor(this.hurtFlash * 20) % 2 === 0) ctx.globalAlpha = 0.4;
-    Sprites.drawHumanoid(ctx, this.spriteX, this.spriteY, {
-      dir: this.dir,
-      walkPhase: this.moving ? this.walkPhase : 0,
-      stage: this.stage,
-      hurt: this.invuln > 0,
-    });
+    Textures.person(ctx, this.x, this.y, STAGE_SCALE[this.stage], this.dir, PLAYER_PALETTE);
     ctx.restore();
 
     if (this.attacking > 0) {
@@ -116,6 +110,15 @@ class Player {
   }
 }
 
+const STAGE_SCALE = { child: 0.55, teen: 0.65, adult: 0.75 };
+const PLAYER_PALETTE = {
+  skin: Textures.COLORS.skin,
+  hair: "#2a1e18",
+  shirt: "#4a5a73",
+  pants: "#2e2a26",
+  shirtShade: "#333f52",
+};
+
 function collidesAny(box, solids) {
   for (const s of solids) {
     if (box.x < s.x + s.w && box.x + box.w > s.x && box.y < s.y + s.h && box.y + box.h > s.y) return true;
@@ -124,6 +127,14 @@ function collidesAny(box, solids) {
 }
 
 // ------------------------------------------------------------
+const MIRA_PALETTE = {
+  skin: Textures.COLORS.skin,
+  hair: "#c9c0b0",
+  shirt: "#6b4a8a",
+  pants: "#3a2f4a",
+  shirtShade: "#4a3563",
+};
+
 class NPC {
   constructor(data) {
     Object.assign(this, data);
@@ -138,22 +149,9 @@ class NPC {
 
   draw(ctx) {
     if (this.type === "kai") {
-      Sprites.drawShadow(ctx, this.x, this.y + 2, 7);
-      if (Assets.has("kai")) {
-        const w = 24, h = 46; // drawn larger than the tile grid to keep the art's detail
-        ctx.drawImage(Assets.images.kai, this.x - w / 2, this.y - h + 6, w, h);
-      } else {
-        Sprites.drawHumanoid(ctx, this.spriteX, this.spriteY, {
-          dir: this.dir, stage: "child",
-          skin: "#e0b088", hair: "#c9772e", shirt: "#3e6b8a", pants: "#2a2a3a",
-        });
-      }
+      Textures.kai(ctx, this.x, this.y, 0.55, this.dir);
     } else {
-      Sprites.drawShadow(ctx, this.x, this.y + 2, 7);
-      Sprites.drawVillager(ctx, this.spriteX, this.spriteY, {
-        dir: this.dir,
-        ...(this.palette || {}),
-      });
+      Textures.person(ctx, this.x, this.y, 0.65, this.dir, this.palette || MIRA_PALETTE);
     }
   }
 
@@ -182,12 +180,7 @@ class Interactable {
 
   draw(ctx) {
     if (this.interactKey && this.interactKey.startsWith("sign")) {
-      ctx.save();
-      ctx.fillStyle = "#8a6a4a";
-      ctx.fillRect(this.x, this.y + 6, 4, 12);
-      ctx.fillStyle = "#a08050";
-      ctx.fillRect(this.x - 6, this.y, 16, 10);
-      ctx.restore();
+      Textures.sign(ctx, this.x, this.y, this.label || "SIGN");
     }
   }
 
@@ -235,7 +228,14 @@ class TrainingDummy {
     }
   }
 
-  draw(ctx) { Sprites.drawDummy(ctx, this.x, this.y); }
+  draw(ctx) {
+    const C = Textures.COLORS;
+    Textures.rect(ctx, this.x - 2, this.y - 24, 4, 26, C.woodDark);
+    Textures.rect(ctx, this.x - 9, this.y - 14, 18, 3, C.woodDark);
+    Textures.circle(ctx, this.x, this.y - 28, 7, C.dirtLight);
+    Textures.circle(ctx, this.x - 3, this.y - 29, 1.5, "#2a1e18");
+    Textures.circle(ctx, this.x + 3, this.y - 29, 1.5, "#2a1e18");
+  }
 
   interact() {
     if (!Game.flags.trainingComplete) {
@@ -321,37 +321,24 @@ class Wolf {
 
   draw(ctx) {
     if (this.defeated) return;
-    Sprites.drawShadow(ctx, this.x, this.y + 4, 8);
-
-    if (Assets.has("wolf")) {
-      const w = 42, h = 28;
-      const dx = this.x - w / 2, dy = this.y - h + 6;
-      const facingRight = Game.player.x > this.x; // source art faces left natively
-      ctx.save();
-      if (this.hurtTimer > 0 && Math.floor(this.hurtTimer * 20) % 2 === 0) ctx.globalAlpha = 0.4;
-      if (facingRight) {
-        ctx.translate(dx + w, dy);
-        ctx.scale(-1, 1);
-        ctx.drawImage(Assets.images.wolf, 0, 0, w, h);
-      } else {
-        ctx.drawImage(Assets.images.wolf, dx, dy, w, h);
-      }
-      if (this.state === "aggro") {
-        // Static image can't swap to an "alert" pose, so a subtle red
-        // tint stands in for the aggro visual cue instead.
-        ctx.globalCompositeOperation = "source-atop";
-        ctx.fillStyle = "rgba(200,40,40,0.22)";
-        ctx.fillRect(0, 0, w, h);
-      }
-      ctx.restore();
-      return;
+    ctx.save();
+    if (this.hurtTimer > 0 && Math.floor(this.hurtTimer * 20) % 2 === 0) ctx.globalAlpha = 0.4;
+    const facingRight = Game.player.x > this.x;
+    if (facingRight) {
+      ctx.translate(this.x * 2, 0);
+      ctx.scale(-1, 1);
+      Textures.wolf(ctx, this.x, this.y, 0.85);
+    } else {
+      Textures.wolf(ctx, this.x, this.y, 0.85);
     }
+    ctx.restore();
 
-    Sprites.drawWolf(ctx, this.spriteX, this.spriteY, {
-      walkPhase: this.walkPhase,
-      hurt: this.hurtTimer > 0,
-      aggro: this.state === "aggro",
-    });
+    if (this.state === "aggro") {
+      // A small alert mark stands in for a pose change, since the
+      // texture is one static drawing rather than a sprite set.
+      Textures.rect(ctx, this.x - 1, this.y - 34, 2, 8, "#c83c3c");
+      Textures.circle(ctx, this.x, this.y - 24, 1.5, "#c83c3c");
+    }
   }
 }
 

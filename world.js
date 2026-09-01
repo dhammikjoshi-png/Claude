@@ -139,7 +139,7 @@ const SCENES = {
       { type: "tree", x: 90, y: 170, solid: true },
       { type: "rock", x: 250, y: 170, solid: true },
       { type: "rock", x: 60, y: 190, solid: true },
-      { type: "sign", x: 60, y: 200, solid: true, interactKey: "signWolfDen" },
+      { type: "sign", x: 60, y: 200, solid: true, interactKey: "signWolfDen", label: "WOLF DEN" },
     ],
     exits: [
       { rect: { x: 0, y: 100, w: 16, h: 60 }, target: "greenvale", spawn: { x: 390, y: 130, dir: "left" } },
@@ -167,8 +167,8 @@ const SCENES = {
       { type: "tree", x: 320, y: 130, solid: true },
       { type: "tree", x: 60, y: 170, solid: true },
       { type: "rock", x: 180, y: 170, solid: true },
-      { type: "sign", x: 340, y: 190, solid: true, interactKey: "signAncientGate" },
-      { type: "sign", x: 40, y: 60, solid: true, interactKey: "signHiddenCave" },
+      { type: "sign", x: 340, y: 190, solid: true, interactKey: "signAncientGate", label: "ANCIENT GATE" },
+      { type: "sign", x: 40, y: 60, solid: true, interactKey: "signHiddenCave", label: "HIDDEN CAVE" },
     ],
     exits: [
       { rect: { x: 0, y: 100, w: 16, h: 60 }, target: "forestPath", spawn: { x: 390, y: 130, dir: "left" } },

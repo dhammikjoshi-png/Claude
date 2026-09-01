@@ -131,6 +131,8 @@ const Game = {
     this.canvas.width = def.cols * TILE;
     this.canvas.height = def.rows * TILE;
 
+    this._buildGroundCache(def);
+
     this.solids = def.decorations.filter((d) => d.solid).map(getDecorationSolidRect);
 
     const interactables = def.decorations
@@ -145,6 +147,40 @@ const Game = {
 
     AudioSys.setAmbient(def.ambient);
     document.getElementById("locationLabel").textContent = def.name.toUpperCase();
+  },
+
+  // Renders ground tiles once per scene load onto an offscreen canvas,
+  // instead of every frame. Textures.grass()/grassFlowers() use
+  // Math.random() internally to scatter texture detail — calling them
+  // every frame would make the ground visibly sparkle at 60fps, so we
+  // bake the randomness in once and just stamp the result each frame.
+  _buildGroundCache(def) {
+    const cache = document.createElement("canvas");
+    cache.width = def.cols * TILE;
+    cache.height = def.rows * TILE;
+    const cctx = cache.getContext("2d");
+
+    for (let y = 0; y < this.currentGroundGrid.length; y++) {
+      for (let x = 0; x < this.currentGroundGrid[y].length; x++) {
+        const tile = this.currentGroundGrid[y][x];
+        const px = x * TILE, py = y * TILE;
+        if (tile === GROUND.WATER) Textures.water(cctx, px, py, TILE);
+        else if (tile === GROUND.FLOWER) Textures.grassFlowers(cctx, px, py, TILE);
+        else Textures.grass(cctx, px, py, TILE);
+
+        if (tile === GROUND.PATH) {
+          // Cobblestone dabs on top of the grass base
+          const seed = (x * 928371 + y * 12923) % 100;
+          cctx.fillStyle = "rgba(120,95,60,0.45)";
+          cctx.beginPath(); cctx.ellipse(px + 4, py + 4 + (seed % 3), 4, 3, 0, 0, Math.PI * 2); cctx.fill();
+          cctx.beginPath(); cctx.ellipse(px + 11, py + 10, 3.5, 2.8, 0, 0, Math.PI * 2); cctx.fill();
+          cctx.fillStyle = "rgba(230,205,160,0.35)";
+          cctx.beginPath(); cctx.ellipse(px + 3, py + 3 + (seed % 3), 2, 1.4, 0, 0, Math.PI * 2); cctx.fill();
+        }
+      }
+    }
+
+    this.groundCache = cache;
   },
 
   findInteractTarget() {
@@ -226,52 +262,8 @@ const Game = {
     const scene = this.currentScene;
     ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-    // Ground
-    const tileColors = {
-      [GROUND.GRASS]: "#3a5a3a",
-      [GROUND.FLOWER]: "#43633f",
-      [GROUND.PATH]: "#c9a876",
-      [GROUND.WATER]: "#3a6b8a",
-    };
-    for (let y = 0; y < this.currentGroundGrid.length; y++) {
-      for (let x = 0; x < this.currentGroundGrid[y].length; x++) {
-        const tile = this.currentGroundGrid[y][x];
-        const px = x * TILE, py = y * TILE;
-        ctx.fillStyle = tileColors[tile];
-        ctx.fillRect(px, py, TILE, TILE);
-
-        if (tile === GROUND.PATH) {
-          // Cobblestone texture: a few shaded pebble shapes per tile
-          const seed = (x * 928371 + y * 12923) % 100;
-          ctx.fillStyle = "rgba(120,95,60,0.35)";
-          ctx.beginPath(); ctx.ellipse(px + 4, py + 4 + (seed % 3), 4, 3, 0, 0, Math.PI * 2); ctx.fill();
-          ctx.beginPath(); ctx.ellipse(px + 11, py + 10, 3.5, 2.8, 0, 0, Math.PI * 2); ctx.fill();
-          ctx.fillStyle = "rgba(230,205,160,0.3)";
-          ctx.beginPath(); ctx.ellipse(px + 3, py + 3 + (seed % 3), 2, 1.4, 0, 0, Math.PI * 2); ctx.fill();
-        } else {
-          // Grass blade texture
-          const seed = (x * 71 + y * 113) % 7;
-          ctx.strokeStyle = tile === GROUND.FLOWER ? "rgba(30,60,25,0.4)" : "rgba(255,255,255,0.06)";
-          ctx.lineWidth = 1;
-          for (let i = 0; i < 3; i++) {
-            const bx = px + 2 + ((seed + i * 5) % 12);
-            const by = py + 3 + ((seed * 2 + i * 3) % 10);
-            ctx.beginPath();
-            ctx.moveTo(bx, by + 3);
-            ctx.lineTo(bx + 1, by);
-            ctx.stroke();
-          }
-        }
-
-        if (tile === GROUND.FLOWER) {
-          ctx.fillStyle = "#e8d84a";
-          ctx.fillRect(px + 7, py + 7, 2, 2);
-          ctx.fillStyle = "#ffffff";
-          ctx.fillRect(px + 5, py + 8, 1, 1);
-          ctx.fillRect(px + 9, py + 6, 1, 1);
-        }
-      }
-    }
+    // Ground — stamped from the cache built once at scene load
+    if (this.groundCache) ctx.drawImage(this.groundCache, 0, 0);
 
     // Depth-sorted decorations + entities + player
     const drawables = [];
@@ -290,11 +282,14 @@ const Game = {
 
   _drawDecoration(d) {
     const ctx = this.ctx;
-    if (d.type === "tree") Sprites.drawTree(ctx, d.x, d.y);
-    else if (d.type === "rock") Sprites.drawRock(ctx, d.x, d.y);
-    else if (d.type === "house") Sprites.drawHouse(ctx, d.x, d.y, d.w, d.h);
-    else if (d.type === "fence") Sprites.drawFence(ctx, d.x, d.y);
-    else if (d.type === "lantern") Sprites.drawLantern(ctx, d.x, d.y);
+    if (d.type === "tree") Textures.tree(ctx, d.x, d.y, 0.6);
+    else if (d.type === "rock") Textures.rock(ctx, d.x, d.y, 0.7);
+    else if (d.type === "house") {
+      const { cx, ay } = houseAnchor(d);
+      Textures.house(ctx, cx, ay, 0.45);
+    }
+    else if (d.type === "fence") Textures.fence(ctx, d.x, d.y, d.length || 32);
+    else if (d.type === "lantern") Textures.lantern(ctx, d.x, d.y, 0.6);
   },
 
   loop(time) {
@@ -340,14 +335,24 @@ const Game = {
   },
 };
 
+// Converts the old top-left+width/height house data into the
+// center/foundation-anchored point Textures.house() expects, so
+// existing world.js coordinates don't all need to be rewritten.
+function houseAnchor(d) {
+  return { cx: d.x + d.w / 2, ay: d.y + d.h - 21.15 };
+}
+
 function getDecorationSolidRect(d) {
   switch (d.type) {
-    case "tree": return { x: d.x + 8, y: d.y + 18, w: 12, h: 14 };
-    case "rock": return { x: d.x + 2, y: d.y + 4, w: 12, h: 10 };
-    case "house": return { x: d.x, y: d.y + d.h * 0.35, w: d.w, h: d.h * 0.65 };
+    case "tree": return { x: d.x - 4, y: d.y + 3, w: 8, h: 17 };
+    case "rock": return { x: d.x - 8, y: d.y - 4, w: 16, h: 11 };
+    case "house": {
+      const { cx, ay } = houseAnchor(d);
+      return { x: cx - 23, y: ay - 2, w: 46, h: 23 };
+    }
     case "dummy": return { x: d.x, y: d.y + 4, w: 16, h: 20 };
-    case "sign": return { x: d.x - 6, y: d.y, w: 16, h: 16 };
-    case "fence": return { x: d.x, y: d.y + 2, w: 32, h: 11 };
+    case "sign": return { x: d.x - 8, y: d.y + 2, w: 16, h: 20 };
+    case "fence": return { x: d.x, y: d.y - 2, w: d.length || 32, h: 17 };
     default: return { x: d.x, y: d.y, w: 16, h: 16 };
   }
 }

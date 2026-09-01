@@ -39,29 +39,45 @@ for this slice.
 |---|---|
 | `index.html` | Page shell, HUD markup, touch control markup, CSS |
 | `storage.js` | Save/load abstraction (works in Claude artifacts *and* standalone hosting) |
-| `assets.js` | Loads real image sprites (Kai, wolf, tree, fence) with automatic fallback to procedural art if an image fails to load |
 | `audio.js` | Procedural ambient sound + SFX (Web Audio API, no asset files) |
-| `sprites.js` | Rendering functions — real image sprites where available, procedural pixel-art shapes elsewhere (player, houses, rocks) |
+| `textures.js` | **The whole visual art style.** Every character, tree, house, rock, wolf, fence, and sign is drawn with code — one consistent hand throughout, no image files needed at all |
+| `sprites.js` | Just the crystal — kept separate on purpose since it's meant to look otherworldly, not blend in |
 | `world.js` | **Data-driven scene definitions** — maps, decorations, exits |
 | `entities.js` | Player, NPC, Wolf, Crystal, TrainingDummy — behavior classes |
 | `dialogue.js` | All dialogue content, including Kai's flag-based reactions |
 | `input.js` | Keyboard + touch joystick, unified into one input state |
 | `game.js` | Main loop, scene loading, rendering, story flags, save/load wiring |
-| `assets/` | Real sprite images (kai.png, wolf.png, tree.png, fence.png) extracted and background-keyed from a source sheet |
 
-## Art: mixed real sprites + procedural
+## Art: fully code-drawn, one consistent style
 
-Kai, the wolf, trees, and fences use real extracted images (with a red
-tint standing in for the wolf's "aggro" pose, since a static image can't
-swap poses). The player, houses, and rocks stay procedural — the player
-because it needs to visually grow through 3 life stages, houses/rocks
-because their stone-gray tones were too close to the source sheet's
-background color to key out cleanly without leaving visible holes.
+Earlier versions of this project tried mixing procedural shapes with
+real extracted sprite images. That looked inconsistent — two different
+visual languages sharing one scene never reads as coherent, no matter
+how much either piece is polished individually.
 
-If you get a better/cleaner source sheet later (ideally with actual
-transparency, not a solid background color), swap the files in `assets/`
-and add matching entries to `assets.js` — `Assets.has(name)` gates every
-image draw, so nothing breaks if a file is missing or slow to load.
+Everything now draws through `textures.js`: grass, paths, trees,
+houses, rocks, fences, lanterns, signs (with real rendered text), the
+player, Kai, the wolf, and the training dummy. No image files, no
+transparency/keying issues, no upload pitfalls — just one hand-coded
+style for the whole world.
+
+**Ground tiles are cached, not redrawn every frame.** `Textures.grass()`
+uses `Math.random()` to scatter texture detail, which would visibly
+flicker at 60fps if called every frame. `game.js` renders each scene's
+ground once onto an offscreen canvas when the scene loads
+(`_buildGroundCache`), then just stamps that image each frame.
+
+**The player and Kai share one `person()` drawing function** with
+different color palettes — that's why they'll always look like they
+belong to the same world no matter how either one changes later. The
+player's growth stages (child/teen/adult) currently just scale this up
+slightly (`STAGE_SCALE` in `entities.js`); true proportion changes per
+stage would be a good next enhancement when Phase 3 actually needs it.
+
+If you ever want to move to real hand-drawn art later, draw it with an
+actual transparent background from the start (not a solid color to key
+out afterward) — that's the one non-negotiable requirement that tripped
+up every AI-generated sheet we tried.
 
 ## Why it's structured this way
 
