@@ -25,6 +25,7 @@ const Game = {
     this.canvas = document.getElementById("gameCanvas");
     this.ctx = this.canvas.getContext("2d");
     this.ctx.imageSmoothingEnabled = false;
+    await Art.load();
 
     this.player = new Player(60, 130);
 
@@ -356,11 +357,16 @@ const Game = {
 
   _drawDecoration(d) {
     const ctx = this.ctx;
-    if (d.type === "tree") Textures.tree(ctx, d.x, d.y, d.border ? 0.78 : 0.88);
+    if (d.type === "tree") {
+      const blocksImportantActor = !d.border && this.currentScene.npcs.some((n) => Math.hypot(n.x - d.x, n.y - d.y) < 48);
+      const drawn = !blocksImportantActor && Art.draw(ctx, "tree", d.x, d.y + 8, d.border ? 44 : 54, d.border ? 62 : 72);
+      if (!drawn) Textures.tree(ctx, d.x, d.y, d.border ? 0.78 : 0.88);
+    }
     else if (d.type === "rock") Textures.rock(ctx, d.x, d.y, 0.82);
     else if (d.type === "house") {
       const { cx, ay } = houseAnchor(d);
-      Textures.house(ctx, cx, ay, 0.62);
+      const drawn = Art.draw(ctx, "house", cx, ay + 4, 88, 76);
+      if (!drawn) Textures.house(ctx, cx, ay, 0.62);
     }
     else if (d.type === "fence") Textures.fence(ctx, d.x, d.y, d.length || 32);
     else if (d.type === "lantern") Textures.lantern(ctx, d.x, d.y, 0.78);
