@@ -19,9 +19,14 @@
     position: relative;
     width: 100%; height: 100%;
     display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+    background:
+      radial-gradient(ellipse at center, rgba(25,49,29,0.42) 0%, rgba(7,13,9,0.92) 72%),
+      #070d09;
   }
   #gameCanvas {
     image-rendering: pixelated;
+    box-shadow: 0 0 28px rgba(0,0,0,0.72), 0 0 80px rgba(13,45,24,0.22);
     image-rendering: -moz-crisp-edges;
     image-rendering: crisp-edges;
     background: #1a2a1a;
@@ -30,7 +35,7 @@
 
   /* ---------- HUD ---------- */
   #hud {
-    position: absolute; top: 10px; left: 10px;
+    position: absolute; top: max(10px, env(safe-area-inset-top)); left: max(10px, env(safe-area-inset-left));
     display: flex; flex-direction: column; gap: 4px;
     pointer-events: none;
     z-index: 20;
@@ -60,7 +65,7 @@
 
   /* ---------- Top-right buttons ---------- */
   #topRight {
-    position: absolute; top: 10px; right: 10px;
+    position: absolute; top: max(10px, env(safe-area-inset-top)); right: max(10px, env(safe-area-inset-right));
     display: flex; gap: 6px;
     z-index: 20;
   }
@@ -137,7 +142,7 @@
     display: none;
   }
   #joystickZone {
-    position: absolute; left: 18px; bottom: 18px;
+    position: absolute; left: max(18px, env(safe-area-inset-left)); bottom: max(18px, env(safe-area-inset-bottom));
     width: 110px; height: 110px;
     border-radius: 50%;
     background: rgba(237,224,200,0.12);
@@ -152,7 +157,7 @@
     border: 2px solid #EDE0C8;
   }
   #attackBtn {
-    position: absolute; right: 22px; bottom: 26px;
+    position: absolute; right: max(22px, env(safe-area-inset-right)); bottom: max(26px, env(safe-area-inset-bottom));
     width: 74px; height: 74px;
     border-radius: 50%;
     background: rgba(139,58,58,0.75);
