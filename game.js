@@ -49,6 +49,9 @@ const Game = {
     document.body.addEventListener("mousedown", () => AudioSys.resume(), { once: true });
     AudioSys.init();
 
+    window.addEventListener("resize", () => this._resizeCanvasDisplay());
+    window.addEventListener("orientationchange", () => setTimeout(() => this._resizeCanvasDisplay(), 100));
+
     requestAnimationFrame((t) => this.loop(t));
   },
 
@@ -130,6 +133,7 @@ const Game = {
 
     this.canvas.width = def.cols * TILE;
     this.canvas.height = def.rows * TILE;
+    this._resizeCanvasDisplay();
 
     this._buildGroundCache(def);
 
@@ -243,6 +247,25 @@ const Game = {
   },
 
   _sleep(ms) { return new Promise((res) => setTimeout(res, ms)); },
+
+  // A <canvas> with no explicit display size just renders at its native
+  // pixel dimensions (e.g. 416x256) — CSS max-width/max-height can only
+  // shrink something too big, never grow something too small. This
+  // computes the largest size that fits the screen while keeping the
+  // scene's aspect ratio, so the game actually fills the viewport
+  // instead of sitting small in the middle of a lot of empty space.
+  _resizeCanvasDisplay() {
+    const root = document.getElementById("gameRoot");
+    const availW = root.clientWidth;
+    const availH = root.clientHeight;
+    const nativeW = this.canvas.width;
+    const nativeH = this.canvas.height;
+    if (!nativeW || !nativeH || !availW || !availH) return;
+
+    const scale = Math.min(availW / nativeW, availH / nativeH);
+    this.canvas.style.width = Math.floor(nativeW * scale) + "px";
+    this.canvas.style.height = Math.floor(nativeH * scale) + "px";
+  },
 
   updateHUD() {
     const heartsEl = document.getElementById("hearts");
