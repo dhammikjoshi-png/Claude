@@ -302,7 +302,41 @@ const Game = {
     drawables.sort((a, b) => a.sortY - b.sortY);
     drawables.forEach((d) => d.draw());
 
+    this._drawAtmosphere(ctx, scene);
     this._drawVignette(ctx);
+  },
+
+  // Visual-only lighting pass. It reads scene decorations but never changes
+  // gameplay state, collision, camera coordinates, or entity behavior.
+  _drawAtmosphere(ctx, scene) {
+    const w = this.canvas.width, h = this.canvas.height;
+    ctx.save();
+    ctx.globalCompositeOperation = "source-over";
+
+    // Cool woodland color cast keeps the outer forest moody.
+    const forestWash = ctx.createLinearGradient(0, 0, 0, h);
+    forestWash.addColorStop(0, "rgba(3, 13, 9, 0.12)");
+    forestWash.addColorStop(0.52, "rgba(10, 25, 15, 0.02)");
+    forestWash.addColorStop(1, "rgba(2, 10, 8, 0.16)");
+    ctx.fillStyle = forestWash;
+    ctx.fillRect(0, 0, w, h);
+
+    // Warm pools of light around lanterns and houses create the reference
+    // image's village-at-night contrast without touching the world model.
+    const lights = scene.decorations.filter((d) => d.type === "lantern" || d.type === "house");
+    for (const d of lights) {
+      const x = d.x + (d.type === "house" ? d.w / 2 : 0);
+      const y = d.y + (d.type === "house" ? d.h * 0.55 : 4);
+      const radius = d.type === "house" ? 42 : 24;
+      const glow = ctx.createRadialGradient(x, y, 1, x, y, radius);
+      glow.addColorStop(0, "rgba(255, 190, 72, 0.16)");
+      glow.addColorStop(0.45, "rgba(220, 135, 42, 0.06)");
+      glow.addColorStop(1, "rgba(220, 135, 42, 0)");
+      ctx.fillStyle = glow;
+      ctx.fillRect(x - radius, y - radius, radius * 2, radius * 2);
+    }
+
+    ctx.restore();
   },
 
   // A soft darkened edge gives the scene depth instead of looking like
@@ -322,14 +356,14 @@ const Game = {
 
   _drawDecoration(d) {
     const ctx = this.ctx;
-    if (d.type === "tree") Textures.tree(ctx, d.x, d.y, 0.6);
-    else if (d.type === "rock") Textures.rock(ctx, d.x, d.y, 0.7);
+    if (d.type === "tree") Textures.tree(ctx, d.x, d.y, d.border ? 0.78 : 0.88);
+    else if (d.type === "rock") Textures.rock(ctx, d.x, d.y, 0.82);
     else if (d.type === "house") {
       const { cx, ay } = houseAnchor(d);
-      Textures.house(ctx, cx, ay, 0.45);
+      Textures.house(ctx, cx, ay, 0.62);
     }
     else if (d.type === "fence") Textures.fence(ctx, d.x, d.y, d.length || 32);
-    else if (d.type === "lantern") Textures.lantern(ctx, d.x, d.y, 0.6);
+    else if (d.type === "lantern") Textures.lantern(ctx, d.x, d.y, 0.78);
   },
 
   loop(time) {
