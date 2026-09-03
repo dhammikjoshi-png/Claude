@@ -38,6 +38,7 @@ const Game = {
       this.player.stage = save.stage || "child";
       this.player.maxHp = save.maxHp || STAGE_MAXHP.child;
       this.player.hp = save.hp != null ? save.hp : this.player.maxHp;
+      Story.syncLoadedState();
       this.loadScene(save.sceneId || "greenvale", { x: save.playerX || 60, y: save.playerY || 130, dir: save.playerDir || "down" });
       this.showToast("Welcome back to Whispering Woods");
     } else {
@@ -154,6 +155,47 @@ const Game = {
     document.getElementById("locationLabel").textContent = def.name.toUpperCase();
   },
 
+  _paintReferenceGrass(cctx, px, py, x, y, flower = false) {
+    const hash = (n) => Math.abs(Math.sin(n * 12.9898) * 43758.5453) % 1;
+    cctx.fillStyle = "#1b351f";
+    cctx.fillRect(px, py, TILE, TILE);
+    cctx.fillStyle = "#254824";
+    for (let i = 0; i < 5; i++) {
+      const gx = px + 1 + Math.floor(hash(x * 71 + y * 31 + i * 13) * 14);
+      const gy = py + 3 + Math.floor(hash(x * 19 + y * 47 + i * 17) * 11);
+      cctx.fillRect(gx, gy, 1, 2);
+      if (i % 2 === 0) cctx.fillRect(gx + 1, gy - 1, 1, 2);
+    }
+    cctx.fillStyle = "#345c2b";
+    for (let i = 0; i < 3; i++) {
+      const gx = px + 2 + Math.floor(hash(x * 43 + y * 67 + i * 29) * 12);
+      const gy = py + 4 + Math.floor(hash(x * 83 + y * 23 + i * 11) * 9);
+      cctx.fillRect(gx, gy, 2, 1);
+      cctx.fillRect(gx + 1, gy - 2, 1, 2);
+    }
+    if (flower) {
+      const colors = ["#ead9a5", "#e99a9c", "#b795d6", "#e6ae46"];
+      cctx.fillStyle = colors[(x + y) % colors.length];
+      cctx.fillRect(px + 5 + ((x * 3 + y) % 5), py + 5 + ((y * 2 + x) % 5), 2, 2);
+      cctx.fillStyle = "#557a32";
+      cctx.fillRect(px + 6 + ((x * 3 + y) % 5), py + 7 + ((y * 2 + x) % 5), 1, 3);
+    }
+  },
+
+  _paintReferencePath(cctx, px, py, x, y) {
+    const hash = (n) => Math.abs(Math.sin(n * 12.9898) * 43758.5453) % 1;
+    cctx.fillStyle = "#9a7748";
+    cctx.fillRect(px, py, TILE, TILE);
+    const stones = [[2, 2, 5, 3], [9, 4, 5, 3], [4, 10, 4, 3], [11, 12, 3, 2]];
+    stones.forEach(([sx, sy, sw, sh], i) => {
+      const j = hash(x * 97 + y * 53 + i * 7);
+      cctx.fillStyle = j > 0.5 ? "#b9945d" : "#86663f";
+      cctx.fillRect(px + sx, py + sy, sw, sh);
+      cctx.fillStyle = j > 0.5 ? "#d0ae70" : "#a88450";
+      cctx.fillRect(px + sx, py + sy, Math.max(1, sw - 2), 1);
+    });
+  },
+
   // Renders ground tiles once per scene load onto an offscreen canvas,
   // instead of every frame. Textures.grass()/grassFlowers() use
   // Math.random() internally to scatter texture detail — calling them
@@ -170,18 +212,8 @@ const Game = {
         const tile = this.currentGroundGrid[y][x];
         const px = x * TILE, py = y * TILE;
         if (tile === GROUND.WATER) Textures.water(cctx, px, py, TILE);
-        else if (tile === GROUND.FLOWER) Textures.grassFlowers(cctx, px, py, TILE);
-        else Textures.grass(cctx, px, py, TILE);
-
-        if (tile === GROUND.PATH) {
-          // Cobblestone dabs on top of the grass base
-          const seed = (x * 928371 + y * 12923) % 100;
-          cctx.fillStyle = "rgba(120,95,60,0.45)";
-          cctx.beginPath(); cctx.ellipse(px + 4, py + 4 + (seed % 3), 4, 3, 0, 0, Math.PI * 2); cctx.fill();
-          cctx.beginPath(); cctx.ellipse(px + 11, py + 10, 3.5, 2.8, 0, 0, Math.PI * 2); cctx.fill();
-          cctx.fillStyle = "rgba(230,205,160,0.35)";
-          cctx.beginPath(); cctx.ellipse(px + 3, py + 3 + (seed % 3), 2, 1.4, 0, 0, Math.PI * 2); cctx.fill();
-        }
+        else if (tile === GROUND.PATH) this._paintReferencePath(cctx, px, py, x, y);
+        else this._paintReferenceGrass(cctx, px, py, x, y, tile === GROUND.FLOWER);
       }
     }
 
@@ -244,6 +276,7 @@ const Game = {
     AudioSys.chime();
     AudioSys.setAmbient(this.currentScene.ambient);
     this.setPaused(false);
+    Story.afterFirstVision();
     this.showToast("A vision lingers in your mind...");
   },
 

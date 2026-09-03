@@ -79,6 +79,16 @@ function getKaiLines(flags) {
       flagsToSet: { kaiForestWarning: true },
     };
   }
+  if (flags.teenUnlocked && !flags.teenQuestStarted) {
+    return {
+      lines: [
+        "You’re really going back to the woods? Then I’m coming with you this time.",
+        "I’ve been mapping the Forest Path while you were away. Three maps, three different roads.",
+        "The crystal showed us something, and I’m going to help you find out what it was.",
+      ],
+      flagsToSet: { teenQuestStarted: true },
+    };
+  }
   if (flags.visionSeen) {
     return {
       lines: [
