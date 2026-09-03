@@ -38,6 +38,7 @@ const Game = {
       this.player.stage = save.stage || "child";
       this.player.maxHp = save.maxHp || STAGE_MAXHP.child;
       this.player.hp = save.hp != null ? save.hp : this.player.maxHp;
+      Story.syncLoadedState();
       this.loadScene(save.sceneId || "greenvale", { x: save.playerX || 60, y: save.playerY || 130, dir: save.playerDir || "down" });
       this.showToast("Welcome back to Whispering Woods");
     } else {
@@ -275,6 +276,7 @@ const Game = {
     AudioSys.chime();
     AudioSys.setAmbient(this.currentScene.ambient);
     this.setPaused(false);
+    Story.afterFirstVision();
     this.showToast("A vision lingers in your mind...");
   },
 
