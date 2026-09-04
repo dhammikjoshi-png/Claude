@@ -157,6 +157,7 @@ class NPC {
 
   interact(flags, setFlag) {
     if (this.type === "kai") {
+      if (flags.visionSeen && !flags.childhoodComplete && Story.onKaiReturn()) return;
       const result = getKaiLines(flags);
       DialogueSys.start("Kai", result.lines, () => {
         Object.entries(result.flagsToSet).forEach(([k, v]) => setFlag(k, v));
