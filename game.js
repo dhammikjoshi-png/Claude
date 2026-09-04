@@ -325,7 +325,7 @@ const Game = {
     // Depth-sorted decorations + entities + player
     const drawables = [];
     for (const d of scene.decorations) {
-      if (d.interactKey) continue;
+      if (d.interactKey && !String(d.interactKey).startsWith("forestClue")) continue;
       drawables.push({ sortY: d.y + (d.h || 24), draw: () => this._drawDecoration(d) });
     }
     for (const e of this.entities) {
@@ -403,6 +403,47 @@ const Game = {
     }
     else if (d.type === "fence") Textures.fence(ctx, d.x, d.y, d.length || 32);
     else if (d.type === "lantern") Textures.lantern(ctx, d.x, d.y, 0.78);
+    else if (d.interactKey && String(d.interactKey).startsWith("forestClue")) this._drawForestClue(d);
+  },
+
+  _drawForestClue(d) {
+    const ctx = this.ctx;
+    const pulse = 0.78 + Math.sin(performance.now() / 280) * 0.12;
+    const colors = {
+      forestClueCompass: ["#d7b45a", "#4b3824", "COMPASS"],
+      forestClueRoots: ["#8bc45a", "#27452b", "ROOTS"],
+      forestClueMap: ["#e0c28a", "#6d452b", "MAP SCRAP"],
+    };
+    const [accent, shadow, label] = colors[d.interactKey] || ["#f0d27a", "#33261b", "CLUE"];
+    ctx.save();
+    ctx.globalAlpha = pulse;
+    ctx.fillStyle = "rgba(240, 208, 112, 0.22)";
+    ctx.beginPath(); ctx.arc(d.x, d.y - 3, 10, 0, Math.PI * 2); ctx.fill();
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = shadow;
+    ctx.fillRect(d.x - 6, d.y - 2, 12, 8);
+    ctx.fillStyle = accent;
+    if (d.interactKey === "forestClueCompass") {
+      ctx.fillRect(d.x - 5, d.y - 5, 10, 10);
+      ctx.fillStyle = "#463b2b";
+      ctx.fillRect(d.x - 1, d.y - 4, 2, 8);
+      ctx.fillRect(d.x - 4, d.y - 1, 8, 2);
+    } else if (d.interactKey === "forestClueRoots") {
+      ctx.fillRect(d.x - 2, d.y - 9, 4, 15);
+      ctx.fillRect(d.x - 7, d.y - 3, 14, 3);
+      ctx.fillStyle = "#b8e56b";
+      ctx.fillRect(d.x - 1, d.y - 8, 2, 3);
+    } else {
+      ctx.fillRect(d.x - 6, d.y - 6, 12, 10);
+      ctx.fillStyle = "#9a6c42";
+      ctx.fillRect(d.x - 3, d.y - 4, 7, 1);
+      ctx.fillRect(d.x - 3, d.y - 1, 5, 1);
+    }
+    ctx.font = "bold 6px monospace";
+    ctx.textAlign = "center";
+    ctx.fillStyle = "#fff1b0";
+    ctx.fillText(label, d.x, d.y + 15);
+    ctx.restore();
   },
 
   loop(time) {
