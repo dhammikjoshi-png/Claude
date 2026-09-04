@@ -10,9 +10,12 @@ const Story = {
   },
 
   afterFirstVision() {
-    if (Game.flags.childhoodComplete) return;
-    Game.setFlag("childhoodComplete", true);
     Game.setFlag("crystalVisionSeen", true);
+  },
+
+  onKaiReturn() {
+    if (Game.flags.childhoodComplete) return false;
+    Game.setFlag("childhoodComplete", true);
     Game.player.growTo("teen");
     Game.setFlag("teenUnlocked", true);
     DialogueSys.start("Kai", [
@@ -20,7 +23,12 @@ const Story = {
       "Tell me everything. This time, we’re going back together.",
       "I’ll map the Forest Path. You figure out what the crystal wants us to see.",
       "Whatever is beyond that Gate, we’ll face it as a team.",
-    ], () => Game.persistState());
+    ], () => {
+      Game.setFlag("teenQuestStarted", false);
+      Game.showToast("Teen chapter: investigate the changing Forest Path");
+      Game.persistState();
+    });
+    return true;
   },
 
   startTeenInvestigation() {
