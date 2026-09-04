@@ -120,6 +120,43 @@ const SIGN_TEXT = {
   signHiddenCave: ["Faint carvings: \"Hidden Cave.\"", "(You can't tell where the entrance actually is from here.)"],
 };
 
+const FOREST_INVESTIGATION_CLUES = {
+  forestClueCompass: [
+    "A broken hunter’s compass lies beneath the grass.",
+    "The needle is pointing toward the forest wall, not north.",
+    "Kai should see this. The Forest Path is changing around something.",
+  ],
+  forestClueRoots: [
+    "The roots here have pushed through the path overnight.",
+    "Fresh sap glows faintly inside the cracks.",
+    "The growth forms the same three-line circle as the crystal symbol.",
+  ],
+  forestClueMap: [
+    "A scrap of Kai’s map is pinned to a tree by a black thorn.",
+    "The path drawn on it does not match the road beneath your feet.",
+    "A new route is forming deeper in the woods.",
+  ],
+};
+
+function investigateForestClue(key, flags, setFlag) {
+  const lines = FOREST_INVESTIGATION_CLUES[key];
+  if (!lines) return false;
+  DialogueSys.start("Forest Path", lines, () => {
+    setFlag(key, true);
+    const count = ["forestClueCompass", "forestClueRoots", "forestClueMap"]
+      .filter((clue) => Game.flags[clue]).length;
+    if (count >= 3 && !Game.flags.forestPathInvestigated) {
+      setFlag("forestPathInvestigated", true);
+      DialogueSys.start("Kai", [
+        "Three clues, and none of them fit the old maps.",
+        "The path isn’t just overgrown. It’s moving.",
+        "Let’s report back at Greenvale, then follow the new route together.",
+      ], () => Game.showToast("Forest Path investigated — return to Greenvale"));
+    }
+  });
+  return true;
+}
+
 const TRAINING_DUMMY_LINES = {
   intro: ["You take a swing at the training dummy with your wooden sword.", "(Tap ATTACK, or press Space, near the dummy to practice.)"],
   complete: ["Solid hit! Kai gives you a thumbs up from across the yard."],

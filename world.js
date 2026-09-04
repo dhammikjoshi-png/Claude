@@ -140,6 +140,9 @@ const SCENES = {
       { type: "rock", x: 250, y: 170, solid: true },
       { type: "rock", x: 60, y: 190, solid: true },
       { type: "sign", x: 60, y: 200, solid: true, interactKey: "signWolfDen", label: "WOLF DEN" },
+      { type: "sign", x: 116, y: 72, solid: false, interactKey: "forestClueCompass", label: "COMPASS" },
+      { type: "sign", x: 188, y: 132, solid: false, interactKey: "forestClueRoots", label: "ROOTS" },
+      { type: "sign", x: 300, y: 74, solid: false, interactKey: "forestClueMap", label: "MAP SCRAP" },
     ],
     exits: [
       { rect: { x: 0, y: 100, w: 16, h: 60 }, target: "greenvale", spawn: { x: 390, y: 130, dir: "left" } },

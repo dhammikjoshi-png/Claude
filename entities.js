@@ -185,8 +185,10 @@ class Interactable {
     }
   }
 
-  interact() {
-    if (this.interactKey === "trainingDummy") {
+  interact(flags, setFlag) {
+    if (this.interactKey.startsWith("forestClue")) {
+      investigateForestClue(this.interactKey, flags, setFlag);
+    } else if (this.interactKey === "trainingDummy") {
       DialogueSys.start("", Game.flags.trainingComplete ? TRAINING_DUMMY_LINES.complete : TRAINING_DUMMY_LINES.intro, () => {
         Game.setFlag("trainingComplete", true);
       });
