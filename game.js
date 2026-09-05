@@ -156,6 +156,7 @@ const Game = {
   },
 
   _paintReferenceGrass(cctx, px, py, x, y, flower = false) {
+    if (Art.draw(cctx, "terrainGrass", px + TILE / 2, py + TILE, TILE, TILE)) return;
     const hash = (n) => Math.abs(Math.sin(n * 12.9898) * 43758.5453) % 1;
     cctx.fillStyle = "#1b351f";
     cctx.fillRect(px, py, TILE, TILE);
@@ -183,6 +184,7 @@ const Game = {
   },
 
   _paintReferencePath(cctx, px, py, x, y) {
+    if (Art.draw(cctx, "terrainPath", px + TILE / 2, py + TILE, TILE, TILE)) return;
     const hash = (n) => Math.abs(Math.sin(n * 12.9898) * 43758.5453) % 1;
     cctx.fillStyle = "#9a7748";
     cctx.fillRect(px, py, TILE, TILE);

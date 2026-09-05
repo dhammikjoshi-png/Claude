@@ -8,6 +8,8 @@ const Art = (() => {
     tree: "assets/greenvale-reference/tree-hero.png",
     house: "assets/greenvale-reference/house-hero.png",
     flowers: "assets/greenvale-reference/flower-cluster.png",
+    terrainGrass: "assets/greenvale-reference/terrain-grass-v2.png?v=64",
+    terrainPath: "assets/greenvale-reference/terrain-path-v2.png?v=64",
   };
   const images = {};
   let ready = false;
