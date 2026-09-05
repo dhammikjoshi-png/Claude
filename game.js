@@ -400,8 +400,14 @@ const Game = {
     else if (d.type === "rock") Textures.rock(ctx, d.x, d.y, 0.82);
     else if (d.type === "house") {
       const { cx, ay } = houseAnchor(d);
-      const drawn = Art.draw(ctx, "house", cx, ay + 4, 88, 76);
-      if (!drawn) Textures.house(ctx, cx, ay, 0.62);
+      const atlasCrop = d.x < 80
+        ? { sx: 28, sy: 28, sw: 250, sh: 338 }
+        : { sx: 338, sy: 28, sw: 270, sh: 338 };
+      const drawn = Art.drawRegion(ctx, "masterAtlas", atlasCrop.sx, atlasCrop.sy, atlasCrop.sw, atlasCrop.sh, cx, ay + 4, 88, 76);
+      if (!drawn) {
+        const fallback = Art.draw(ctx, "house", cx, ay + 4, 88, 76);
+        if (!fallback) Textures.house(ctx, cx, ay, 0.62);
+      }
     }
     else if (d.type === "fence") Textures.fence(ctx, d.x, d.y, d.length || 32);
     else if (d.type === "lantern") Textures.lantern(ctx, d.x, d.y, 0.78);
