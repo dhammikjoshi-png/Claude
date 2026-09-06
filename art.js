@@ -11,6 +11,7 @@ const Art = (() => {
     terrainGrass: "assets/greenvale-reference/terrain-grass-v2.png?v=64",
     terrainPath: "assets/greenvale-reference/terrain-path-v2.png?v=64",
     masterAtlas: "assets/greenvale-reference/greenvale-master-atlas.png?v=2",
+    greenvaleBackground: "assets/greenvale-reference/greenvale-scene-background.png?v=1",
   };
   const images = {};
   let ready = false;

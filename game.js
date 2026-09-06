@@ -321,13 +321,18 @@ const Game = {
     const scene = this.currentScene;
     ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-    // Ground — stamped from the cache built once at scene load
-    if (this.groundCache) ctx.drawImage(this.groundCache, 0, 0);
+    // Greenvale uses a complete reference-style scene background. The existing
+    // ground cache remains available as a procedural fallback and for every
+    // other scene; gameplay entities and collision data stay independent.
+    const referenceBackground = scene.id === "greenvale"
+      && Art.drawRegion(ctx, "greenvaleBackground", 0, 0, 2304, 1536, this.canvas.width / 2, this.canvas.height, this.canvas.width, this.canvas.height);
+    if (!referenceBackground && this.groundCache) ctx.drawImage(this.groundCache, 0, 0);
 
     // Depth-sorted decorations + entities + player
     const drawables = [];
     for (const d of scene.decorations) {
       if (d.interactKey && !String(d.interactKey).startsWith("forestClue")) continue;
+      if (scene.id === "greenvale" && ["tree", "rock", "house", "fence", "lantern"].includes(d.type)) continue;
       drawables.push({ sortY: d.y + (d.h || 24), draw: () => this._drawDecoration(d) });
     }
     for (const e of this.entities) {
